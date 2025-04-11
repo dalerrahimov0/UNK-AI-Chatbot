@@ -1,0 +1,222 @@
+{
+  "info": {
+    "name": "Chatbot API",
+    "description": "Collection for testing the Chatbot API endpoints and WebSocket",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "REST API",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Simple health check endpoint to verify API is running"
+          },
+          "response": []
+        },
+        {
+          "name": "Ask Question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ask"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"topic\": \"Artificial Intelligence\",\n    \"question\": \"What is machine learning?\"\n}"
+            },
+            "description": "Endpoint to ask a question on a specific topic"
+          },
+          "response": []
+        },
+        {
+          "name": "List Markdown Files",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/docs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "docs"]
+            },
+            "description": "Lists all markdown files in the docs directory"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Markdown File",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/docs/academic_advising.md",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "docs", "academic_advising.md"]
+            },
+            "description": "Gets a specific markdown file from the docs directory"
+          },
+          "response": []
+        },
+        {
+          "name": "Fetch Content From URLs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/fetch",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fetch"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urls\": [\n    \"https://example.com\",\n    \"https://nodejs.org/en/\"\n  ]\n}"
+            },
+            "description": "Fetches content from multiple URLs and saves as markdown files"
+          },
+          "response": []
+        },
+        {
+          "name": "Get WebSocket Client",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/client.html",
+              "host": ["{{baseUrl}}"],
+              "path": ["client.html"]
+            },
+            "description": "Gets the HTML WebSocket client for testing"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "WebSocket",
+      "item": [
+        {
+          "name": "Join Group",
+          "request": {
+            "method": "WEBSOCKET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"type\":\"join\",\"group\":\"academic\"}"
+            },
+            "url": {
+              "raw": "ws://localhost:3000",
+              "protocol": "ws",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Question",
+          "request": {
+            "method": "WEBSOCKET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"type\":\"question\",\"topic\":\"Academic Advising\",\"question\":\"How do I change my major?\"}"
+            },
+            "url": {
+              "raw": "ws://localhost:3000",
+              "protocol": "ws",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Broadcast Message",
+          "request": {
+            "method": "WEBSOCKET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"type\":\"broadcast\",\"username\":\"JohnDoe\",\"message\":\"Hello everyone in the group!\"}"
+            },
+            "url": {
+              "raw": "ws://localhost:3000",
+              "protocol": "ws",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000"
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Important: use \"Run in Postman\" button to test the WebSocket in Postman app",
+              "// Note: In the WebSocket requests, you need to click \"Connect\" first before sending messages"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// This script runs before every request",
+          "console.log('Making request to: ' + pm.request.url);"
+        ],
+        "type": "text/javascript"
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "// This script runs after every request",
+          "if (pm.response.code === 200) {",
+          "    console.log('Request successful');",
+          "} else {",
+          "    console.log('Request failed with status: ' + pm.response.code);",
+          "}"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ]
+}

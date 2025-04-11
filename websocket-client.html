@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UNK AI ChatBot</title>
+  <link rel="icon" type="image/jpeg" href="UNK-00013A.jpg" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #003366;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header img {
+      height: 50px;
+      object-fit: contain;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      padding: 30px;
+    }
+    .chat-window {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 8px;
+      background: #fafafa;
+      margin-bottom: 10px;
+    }
+    #typingIndicator {
+      font-style: italic;
+      margin-bottom: 15px;
+      color: #666;
+    }
+    .dot {
+      animation: blink 1s infinite alternate;
+    }
+    @keyframes blink {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .controls, .tab-controls {
+      margin-top: 15px;
+    }
+    input, select, button, textarea {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .chat-input-row textarea {
+      flex: 1;
+      resize: vertical;
+      height: 80px;
+    }
+    .message-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .avatar {
+      background: #007bff;
+      color: white;
+      font-weight: bold;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      text-align: center;
+      line-height: 32px;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .message {
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .system { background-color: #e3f2fd; }
+    .error { background-color: #ffebee; color: #c62828; }
+    .status { background-color: #fff3e0; font-style: italic; }
+    .broadcast { background-color: #ede7f6; }
+    .answer { background-color: #e8f5e9; }
+    .user { background-color: #dcedc8; text-align: right; }
+    .other { background-color: #fff9c4; text-align: left; }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: bold;
+      border-bottom: 2px solid transparent;
+    }
+    .tab-btn.active {
+      border-color: #007bff;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>UNK AI ChatBot</h1>
+    <img src="UNK-00013A.jpg" alt="UNK Logo" />
+  </header>
+  <div class="container">
+    <div id="chatWindow" class="chat-window">Connected to server</div>
+    <div id="typingIndicator" style="display:none;">
+      UNK AI is typing<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+    </div>
+
+    <div class="controls">
+      <div class="row">
+        <select id="groupSelect">
+          <option value="">Select a group</option>
+          <option value="academic">Academic Advising</option>
+          <option value="career">Career Services</option>
+          <option value="tech">Tech Support</option>
+          <option value="general">General</option>
+        </select>
+        <button id="joinBtn">Join Group</button>
+      </div>
+
+      <div class="tab-controls">
+        <div class="tabs">
+          <button id="chatTab" class="tab-btn active">Chat</button>
+          <button id="questionTab" class="tab-btn">Ask Question</button>
+        </div>
+
+        <div id="chatTabContent">
+          <div class="row">
+            <input type="text" id="usernameInput" placeholder="Your username">
+          </div>
+          <div class="chat-input-row">
+            <textarea id="messageInput" placeholder="Type your message here..."></textarea>
+            <button id="broadcastBtn">Send Message</button>
+          </div>
+        </div>
+
+        <div id="questionTabContent" style="display:none;">
+          <div class="row">
+            <input type="text" id="topicInput" placeholder="Topic">
+          </div>
+          <textarea id="questionInput" rows="3" placeholder="Type your question here..."></textarea>
+          <div class="row">
+            <label><input type="checkbox" id="usePineconeCheckbox" checked> Use Pinecone for document retrieval</label>
+            <button id="sendBtn">Ask AI</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ws;
+    let currentGroup = null;
+    const chatWindow = document.getElementById('chatWindow');
+    const groupSelect = document.getElementById('groupSelect');
+    const joinBtn = document.getElementById('joinBtn');
+    const topicInput = document.getElementById('topicInput');
+    const questionInput = document.getElementById('questionInput');
+    const usePineconeCheckbox = document.getElementById('usePineconeCheckbox');
+    const sendBtn = document.getElementById('sendBtn');
+    const usernameInput = document.getElementById('usernameInput');
+    const messageInput = document.getElementById('messageInput');
+    const broadcastBtn = document.getElementById('broadcastBtn');
+    const chatTab = document.getElementById('chatTab');
+    const questionTab = document.getElementById('questionTab');
+    const chatTabContent = document.getElementById('chatTabContent');
+    const questionTabContent = document.getElementById('questionTabContent');
+    const typingIndicator = document.getElementById('typingIndicator');
+
+    function appendMessage(type, text, sender = '') {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'message-wrapper';
+
+      if (sender && type !== 'system' && type !== 'status') {
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        const initials = sender
+          .split(' ')
+          .map(w => w[0])
+          .join('')
+          .substring(0, 2)
+          .toUpperCase();
+        avatar.textContent = initials;
+        wrapper.appendChild(avatar);
+      }
+
+      const msg = document.createElement('div');
+      msg.className = `message ${type}`;
+      const timestamp = new Date().toLocaleTimeString();
+      msg.innerHTML = sender ? `<strong>${sender}</strong>: ${text}<br><small>${timestamp}</small>` : `${text}<br><small>${timestamp}</small>`;
+
+      wrapper.appendChild(msg);
+      chatWindow.appendChild(wrapper);
+      chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+    }
+
+    chatTab.addEventListener('click', () => {
+      chatTab.classList.add('active');
+      questionTab.classList.remove('active');
+      chatTabContent.style.display = 'block';
+      questionTabContent.style.display = 'none';
+    });
+
+    questionTab.addEventListener('click', () => {
+      questionTab.classList.add('active');
+      chatTab.classList.remove('active');
+      questionTabContent.style.display = 'block';
+      chatTabContent.style.display = 'none';
+    });
+
+    function connectWebSocket() {
+      ws = new WebSocket(`ws://${window.location.hostname}:3000`);
+      ws.onopen = () => appendMessage('system', 'Connected to server');
+      ws.onmessage = (event) => {
+        typingIndicator.style.display = 'none';
+        const data = JSON.parse(event.data);
+        const sender = data.username || 'UNK AI';
+        const type = data.type === 'broadcast' ? 'other' : data.type;
+        appendMessage(type, data.message || data.answer, sender);
+      };
+      ws.onerror = () => appendMessage('error', 'Connection error');
+      ws.onclose = () => appendMessage('system', 'Disconnected');
+    }
+
+    connectWebSocket();
+
+    joinBtn.onclick = () => {
+      const group = groupSelect.value;
+      if (group && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'join', group }));
+        currentGroup = group;
+        appendMessage('status', `Joined group: ${group}`);
+      }
+    };
+
+    broadcastBtn.onclick = () => {
+      const username = usernameInput.value;
+      const message = messageInput.value;
+      if (currentGroup && username && message) {
+        ws.send(JSON.stringify({ type: 'broadcast', group: currentGroup, username, message }));
+        appendMessage('user', message, username);
+        messageInput.value = '';
+      }
+    };
+
+    sendBtn.onclick = () => {
+      const topic = topicInput.value;
+      const question = questionInput.value;
+      const usePinecone = usePineconeCheckbox.checked;
+      if (currentGroup && topic && question) {
+        typingIndicator.style.display = 'block';
+        ws.send(JSON.stringify({ type: 'question', group: currentGroup, topic, question, usePinecone }));
+        questionInput.value = '';
+      }
+    };
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .container {
+            display: flex;
+            min-height: 600px;
+        }
+        .sidebar {
+            width: 300px;
+            padding: 10px;
+            border-right: 1px solid #ccc;
+            overflow-y: auto;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 10px 20px;
+            overflow-y: auto;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        h2 {
+            margin-top: 20px;
+        }
+        .doc-list {
+            list-style: none;
+            padding: 0;
+        }
+        .doc-list li {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .doc-list li:hover {
+            background-color: #f5f5f5;
+        }
+        .doc-list li.active {
+            background-color: #e0f0ff;
+        }
+        .url-form {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .url-input {
+            width: 100%;
+            min-height: 100px;
+            margin-bottom: 10px;
+            padding: 8px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        .url-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.3);
+            border-radius: 50%;
+            border-top-color: #4CAF50;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+        #documentContent {
+            line-height: 1.6;
+        }
+        #documentContent h1, #documentContent h2, #documentContent h3 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        #documentContent p {
+            margin-bottom: 1em;
+        }
+        #documentContent ul, #documentContent ol {
+            margin-bottom: 1em;
+            padding-left: 2em;
+        }
+        .meta-info {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Document Viewer</h1>
+    <div class="container">
+        <div class="sidebar">
+            <input type="text" class="search-box" id="searchDocs" placeholder="Search documents...">
+            <h2>Documents</h2>
+            <div id="loading" class="hidden">
+                <span class="loading"></span> Loading...
+            </div>
+            <ul class="doc-list" id="docList"></ul>
+            
+            <div class="url-form">
+                <h2>Add New Documents</h2>
+                <div class="url-description">
+                    Enter one or more URLs, each on a new line. Content will be fetched and saved as markdown files.
+                </div>
+                <textarea class="url-input" id="urlInput" placeholder="https://example.com
+https://another-site.com"></textarea>
+                <button class="btn" id="fetchBtn">Fetch Content</button>
+                <div id="status" class="status hidden"></div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="documentInfo" class="meta-info"></div>
+            <div id="documentContent"></div>
+            <div id="noDocumentSelected">
+                <h2>Select a document from the sidebar</h2>
+                <p>Click on a document in the list to view its contents.</p>
+                <p>You can also add new documents by entering URLs in the form on the sidebar.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const docList = document.getElementById('docList');
+        const documentContent = document.getElementById('documentContent');
+        const documentInfo = document.getElementById('documentInfo');
+        const noDocumentSelected = document.getElementById('noDocumentSelected');
+        const urlInput = document.getElementById('urlInput');
+        const fetchBtn = document.getElementById('fetchBtn');
+        const status = document.getElementById('status');
+        const loading = document.getElementById('loading');
+        const searchBox = document.getElementById('searchDocs');
+
+        // Base URL for API
+        const baseUrl = window.location.origin;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDocuments();
+
+            // Set up event listeners
+            fetchBtn.addEventListener('click', fetchUrls);
+            searchBox.addEventListener('input', filterDocuments);
+        });
+
+        // Load documents from API
+        async function loadDocuments() {
+            try {
+                showLoading(true);
+                const response = await fetch(`${baseUrl}/api/docs`);
+                const data = await response.json();
+                
+                renderDocumentList(data.files);
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                showLoading(false);
+                showStatus('Failed to load documents. Please try again.', false);
+            }
+        }
+
+        // Render document list
+        function renderDocumentList(files) {
+            docList.innerHTML = '';
+            
+            if (files.length === 0) {
+                docList.innerHTML = '<li>No documents found</li>';
+                return;
+            }
+            
+            // Sort files by most recently modified
+            files.sort((a, b) => new Date(b.modified) - new Date(a.modified));
+            
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                li.dataset.path = file.path;
+                li.dataset.created = file.created;
+                li.dataset.modified = file.modified;
+                li.dataset.size = file.size;
+                
+                li.addEventListener('click', () => loadDocument(file));
+                
+                docList.appendChild(li);
+            });
+        }
+
+        // Load a specific document
+        async function loadDocument(file) {
+            try {
+                // Update active state
+                document.querySelectorAll('.doc-list li').forEach(li => {
+                    li.classList.remove('active');
+                });
+                document.querySelector(`[data-path="${file.path}"]`).classList.add('active');
+                
+                // Show loading
+                showLoading(true);
+                
+                // Fetch document content
+                const response = await fetch(`${baseUrl}${file.path}`);
+                const markdownContent = await response.text();
+                
+                // Update UI
+                documentContent.innerHTML = marked.parse(markdownContent);
+                
+                // Show metadata
+                const created = new Date(file.created).toLocaleString();
+                const modified = new Date(file.modified).toLocaleString();
+                const size = formatFileSize(file.size);
+                
+                documentInfo.innerHTML = `
+                    <strong>${file.name}</strong><br>
+                    Created: ${created}<br>
+                    Modified: ${modified}<br>
+                    Size: ${size}
+                `;
+                
+                // Show document and hide placeholder
+                documentContent.classList.remove('hidden');
+                documentInfo.classList.remove('hidden');
+                noDocumentSelected.classList.add('hidden');
+                
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading document:', error);
+                showLoading(false);
+                showStatus('Failed to load document. Please try again.', false);
+            }
+        }
+
+        // Fetch URLs
+        async function fetchUrls() {
+            const urlsText = urlInput.value.trim();
+            if (!urlsText) {
+                showStatus('Please enter at least one URL', false);
+                return;
+            }
+            
+            // Parse URLs (one per line)
+            const urls = urlsText.split('\n')
+                .map(url => url.trim())
+                .filter(url => url.length > 0);
+            
+            if (urls.length === 0) {
+                showStatus('Please enter at least one valid URL', false);
+                return;
+            }
+            
+            try {
+                // Show loading
+                showStatus('Fetching content...', true);
+                fetchBtn.disabled = true;
+                
+                // Send request to API
+                const response = await fetch(`${baseUrl}/api/fetch`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ urls })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Success
+                    const successCount = result.results.filter(r => r.success).length;
+                    showStatus(`Successfully processed ${successCount} of ${urls.length} URLs`, true);
+                    
+                    // Clear input
+                    urlInput.value = '';
+                    
+                    // Reload document list
+                    setTimeout(() => {
+                        loadDocuments();
+                    }, 1000);
+                } else {
+                    // Error
+                    showStatus(`Error: ${result.error || 'Unknown error'}`, false);
+                }
+            } catch (error) {
+                console.error('Error fetching URLs:', error);
+                showStatus('Failed to process URLs. Please try again.', false);
+            } finally {
+                fetchBtn.disabled = false;
+            }
+        }
+
+        // Filter documents based on search
+        function filterDocuments() {
+            const searchTerm = searchBox.value.toLowerCase();
+            const items = docList.querySelectorAll('li');
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Helper functions
+        function showLoading(isLoading) {
+            loading.classList.toggle('hidden', !isLoading);
+        }
+        
+        function showStatus(message, isSuccess) {
+            status.textContent = message;
+            status.classList.remove('hidden', 'success', 'error');
+            status.classList.add(isSuccess ? 'success' : 'error');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                status.classList.add('hidden');
+            }, 5000);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            else return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+    </script>
+</body>
+</html>

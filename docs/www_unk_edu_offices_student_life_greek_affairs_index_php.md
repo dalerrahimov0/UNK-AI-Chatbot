@@ -1,7 +1,5 @@
 # Content from https://www.unk.edu/offices/student_life/greek_affairs/index.php
 
-## Fraternity & Sorority Life
-
 ### Discover your direction. Find your Home.
 
 ### About FSL
@@ -26,7 +24,7 @@
 
 ### FSL Events
 
-#### Shawn Peterson
+#### Francisco Acosta Garcia
 
 #### FSL News
 
@@ -44,8 +42,20 @@ Fraternity & Sorority LifePhone: (308) 865-8057Email: fsl@unk.edu
 
 Interested in joining or just learning more about fraternity and sorority life at UNK? Fill out our interest form to be connected with a current FSL student. They will be able to answer all of your questions and share about their experience! Expressing interest does not obligate you to join a fraternity or sorority.
 
-“I personally never thought I would be interested in a fraternity. Since joining, I have met some of my closest friends and I have never looked back and regretted giving it a chance. Sometimes you won’t know whether something’s right for you unless you give it a chance.”
+“I would tell people that are unsure about fraternity and sorority life that college is a new environment and it’s all about coming in with an open mind and just trying to be involved in as many things as possible. If you want to meet new people. FSL is an amazing way to do that.”
 
 
 
-Pi Kappa Alpha
+Sigma Lambda Beta International Fraternity, Inc.
+
+- 
+
+- ‘The Kearney Way’: UNK students make a big impact during The Big Event
+- A third-generation Loper, Kayla Rover continues family tradition with support from New Nebraskan Scholarship
+- Loper Spotlight: Speech-language pathology is the ‘perfect fit’ for UNK junior Jenna Rauert
+- Sam Schroeder, Paige Oltmans will serve as next student body leaders at UNK
+- UNK fraternity ranks third among all chapters nationwide
+- Following in her brother’s footsteps, Olivia Lawless leaves her own mark at UNK
+- Heart of a Teacher: UNK senior Mackenzie Coughlin is ready to make an impact in the classroom
+- UNK junior Rebeca Salinas Balderas creates connections for fellow first-gen students
+

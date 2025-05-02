@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { OpenAI } = require('openai');
 const fs = require('fs');
 const path = require('path');
@@ -100,7 +101,7 @@ const askQuestion = async (topic, question, options = {}) => {
         
         // Call OpenAI API with reduced context
         const completion = await openai.chat.completions.create({
-            model: "gpt-4", // or any other model you prefer
+            model: "gpt-3.5-turbo", // or any other model you prefer
             messages: [
                 { role: "system", content: "You are a helpful assistant providing accurate information on various topics. When possible, use the reference information provided to answer questions accurately. Format your responses using Markdown syntax for better readability. Use headings (##), bullet points (*), numbered lists (1.), code blocks (```), emphasis (**bold**, *italic*), and other markdown formatting where appropriate." },
                 { role: "user", content: `${contextString}\n\nQuestion: ${question}` }
@@ -112,6 +113,7 @@ const askQuestion = async (topic, question, options = {}) => {
         
         // Extract the answer from the response
         const rawAnswer = completion.choices[0].message.content;
+        console.log(`Tokens used — prompt: ${completion.usage.prompt_tokens}, completion: ${completion.usage.completion_tokens}`);
         
         // Return the answer along with token usage information
         return {

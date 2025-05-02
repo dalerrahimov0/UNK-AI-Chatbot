@@ -17,7 +17,7 @@
     "jsdom": "^26.0.0",
     "marked": "^15.0.7",
     "node-fetch": "^2.7.0",
-    "openai": "^4.17.0"
+    "openai": "^4.95.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

@@ -22,7 +22,6 @@
     }
     header img {
       height: 50px;
-      object-fit: contain;
     }
     header h1 {
       margin: 0;
@@ -31,11 +30,9 @@
     .container {
       max-width: 900px;
       margin: 30px auto;
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: white;
       border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
       padding: 30px;
     }
     .chat-window {
@@ -51,13 +48,6 @@
       font-style: italic;
       margin-bottom: 15px;
       color: #666;
-    }
-    .dot {
-      animation: blink 1s infinite alternate;
-    }
-    @keyframes blink {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
     }
     .controls, .tab-controls {
       margin-top: 15px;
@@ -92,103 +82,91 @@
       resize: vertical;
       height: 80px;
     }
-    .message-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .avatar {
-      background: #007bff;
-      color: white;
-      font-weight: bold;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      text-align: center;
-      line-height: 32px;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-    .message {
-      padding: 10px;
-      border-radius: 6px;
-    }
-    .system { background-color: #e3f2fd; }
-    .error { background-color: #ffebee; color: #c62828; }
-    .status { background-color: #fff3e0; font-style: italic; }
-    .broadcast { background-color: #ede7f6; }
-    .answer { background-color: #e8f5e9; }
-    .user { background-color: #dcedc8; text-align: right; }
-    .other { background-color: #fff9c4; text-align: left; }
     .tabs {
       display: flex;
       gap: 10px;
       margin-bottom: 15px;
     }
     .tab-btn {
-      background: none;
-      border: none;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-bottom: none;
       padding: 8px 16px;
       cursor: pointer;
       font-weight: bold;
-      border-bottom: 2px solid transparent;
+      color: #333;
+      border-radius: 6px 6px 0 0;
+      margin-right: 4px;
     }
     .tab-btn.active {
-      border-color: #007bff;
+      background-color: white;
+      border-color: #ccc #ccc white;
       color: #007bff;
     }
+    .message-wrapper { margin-bottom: 10px; }
+    .message { padding: 10px; border-radius: 6px; background: #e8f5e9; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>UNK AI ChatBot</h1>
-    <img src="UNK-00013A.jpg" alt="UNK Logo" />
-  </header>
+  <header style="background-color: #003366; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: space-between;">
+    <h1 style="color: white; font-size: 28px; margin: 0;">UNK AI ChatBot</h1>
+    <img src="unk-00001a.png" alt="UNK Logo" height="50" style="filter: drop-shadow(0 0 2px white); margin-right: 20px;" />
+  </header>  
   <div class="container">
-    <div id="chatWindow" class="chat-window">Connected to server</div>
-    <div id="typingIndicator" style="display:none;">
-      UNK AI is typing<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-    </div>
+    <div id="loginSection" style="max-width: 600px; margin: 60px auto; background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); text-align: center;">
+      <h2 style="font-weight: 600; margin-bottom: 30px;">Login</h2>
+      <input type="text" placeholder="Enter your name" id="usernameLogin" style="padding: 10px 15px; width: 50%; border: 1px solid #ccc; border-radius: 8px; margin-right: 10px;" />
+      <select id="roleSelect" style="padding: 10px 15px; border-radius: 8px; margin-right: 10px;">
+        <option value="student">Student</option>
+        <option value="staff">Staff</option>
+      </select>
+      <button id="loginBtn" style="padding: 10px 20px; background: #007bff; border: none; color: white; border-radius: 8px;">Enter</button>
+    </div>    
 
-    <div class="controls">
-      <div class="row">
-        <select id="groupSelect">
-          <option value="">Select a group</option>
-          <option value="academic">Academic Advising</option>
-          <option value="career">Career Services</option>
-          <option value="tech">Tech Support</option>
-          <option value="general">General</option>
-        </select>
-        <button id="joinBtn">Join Group</button>
+    <div id="chatSection" style="display:none;">
+      <div id="chatWindow" class="chat-window"></div>
+      <div id="typingIndicator" style="display:none;">
+        UNK AI is typing<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
       </div>
 
-      <div class="tab-controls">
+      <div class="controls">
+        <div class="row">
+          <select id="groupSelect">
+            <option value="">Select a group</option>
+            <option value="academic">Academic Advising</option>
+            <option value="career">Career Services</option>
+            <option value="tech">Tech Support</option>
+            <option value="general">General</option>
+          </select>
+          <button id="joinBtn">Join Group</button>
+        </div>
+
         <div class="tabs">
           <button id="chatTab" class="tab-btn active">Chat</button>
           <button id="questionTab" class="tab-btn">Ask Question</button>
         </div>
 
         <div id="chatTabContent">
-          <div class="row">
-            <input type="text" id="usernameInput" placeholder="Your username">
-          </div>
           <div class="chat-input-row">
             <textarea id="messageInput" placeholder="Type your message here..."></textarea>
             <button id="broadcastBtn">Send Message</button>
           </div>
         </div>
 
-        <div id="questionTabContent" style="display:none;">
-          <div class="row">
-            <input type="text" id="topicInput" placeholder="Topic">
+        <div id="questionTabContent" style="display: none; margin-top: 20px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch;">
+            <input id="topicInput" placeholder="Topic" style="flex: 1 1 150px; padding: 10px; border: 1px solid #ccc; border-radius: 8px;" />
+        
+            <textarea id="questionInput" placeholder="Type your question here..." style="flex: 2 1 300px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; resize: none;"></textarea>
+        
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="white-space: nowrap;">
+                <input type="checkbox" id="usePineconeCheckbox" checked /> Use Pinecone
+              </label>
+              <button id="sendBtn" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 8px;">Ask AI</button>
+            </div>
           </div>
-          <textarea id="questionInput" rows="3" placeholder="Type your question here..."></textarea>
-          <div class="row">
-            <label><input type="checkbox" id="usePineconeCheckbox" checked> Use Pinecone for document retrieval</label>
-            <button id="sendBtn">Ask AI</button>
-          </div>
-        </div>
+        </div>        
       </div>
     </div>
   </div>
@@ -196,62 +174,50 @@
   <script>
     let ws;
     let currentGroup = null;
+    let currentUser = null;
+    let currentRole = null;
+
+    const loginSection = document.getElementById('loginSection');
+    const chatSection = document.getElementById('chatSection');
+    const usernameLogin = document.getElementById('usernameLogin');
+    const roleSelect = document.getElementById('roleSelect');
+    const loginBtn = document.getElementById('loginBtn');
     const chatWindow = document.getElementById('chatWindow');
-    const groupSelect = document.getElementById('groupSelect');
-    const joinBtn = document.getElementById('joinBtn');
+    const messageInput = document.getElementById('messageInput');
+    const broadcastBtn = document.getElementById('broadcastBtn');
     const topicInput = document.getElementById('topicInput');
     const questionInput = document.getElementById('questionInput');
     const usePineconeCheckbox = document.getElementById('usePineconeCheckbox');
     const sendBtn = document.getElementById('sendBtn');
-    const usernameInput = document.getElementById('usernameInput');
-    const messageInput = document.getElementById('messageInput');
-    const broadcastBtn = document.getElementById('broadcastBtn');
-    const chatTab = document.getElementById('chatTab');
-    const questionTab = document.getElementById('questionTab');
-    const chatTabContent = document.getElementById('chatTabContent');
-    const questionTabContent = document.getElementById('questionTabContent');
+    const groupSelect = document.getElementById('groupSelect');
+    const joinBtn = document.getElementById('joinBtn');
     const typingIndicator = document.getElementById('typingIndicator');
 
-    function appendMessage(type, text, sender = '') {
+    loginBtn.onclick = () => {
+      const username = usernameLogin.value.trim();
+      const role = roleSelect.value;
+      if (username && role) {
+        currentUser = username;
+        currentRole = role;
+        loginSection.style.display = 'none';
+        chatSection.style.display = 'block';
+      }
+    };
+
+    function appendMessage(type, text, sender = '', role = '') {
       const wrapper = document.createElement('div');
       wrapper.className = 'message-wrapper';
-
-      if (sender && type !== 'system' && type !== 'status') {
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar';
-        const initials = sender
-          .split(' ')
-          .map(w => w[0])
-          .join('')
-          .substring(0, 2)
-          .toUpperCase();
-        avatar.textContent = initials;
-        wrapper.appendChild(avatar);
-      }
-
       const msg = document.createElement('div');
       msg.className = `message ${type}`;
       const timestamp = new Date().toLocaleTimeString();
-      msg.innerHTML = sender ? `<strong>${sender}</strong>: ${text}<br><small>${timestamp}</small>` : `${text}<br><small>${timestamp}</small>`;
-
+      const roleTag = role ? ` (${role})` : '';
+      msg.innerHTML = sender
+        ? `<strong>${sender}${roleTag}</strong>: ${text}<br><small>${timestamp}</small>`
+        : `${text}<br><small>${timestamp}</small>`;
       wrapper.appendChild(msg);
       chatWindow.appendChild(wrapper);
-      chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+      chatWindow.scrollTo({ top: chatWindow.scrollHeight });
     }
-
-    chatTab.addEventListener('click', () => {
-      chatTab.classList.add('active');
-      questionTab.classList.remove('active');
-      chatTabContent.style.display = 'block';
-      questionTabContent.style.display = 'none';
-    });
-
-    questionTab.addEventListener('click', () => {
-      questionTab.classList.add('active');
-      chatTab.classList.remove('active');
-      questionTabContent.style.display = 'block';
-      chatTabContent.style.display = 'none';
-    });
 
     function connectWebSocket() {
       ws = new WebSocket(`ws://${window.location.hostname}:3000`);
@@ -260,14 +226,13 @@
         typingIndicator.style.display = 'none';
         const data = JSON.parse(event.data);
         const sender = data.username || 'UNK AI';
+        const role = data.role || '';
         const type = data.type === 'broadcast' ? 'other' : data.type;
-        appendMessage(type, data.message || data.answer, sender);
+        appendMessage(type, data.message || data.answer, sender, role);
       };
       ws.onerror = () => appendMessage('error', 'Connection error');
       ws.onclose = () => appendMessage('system', 'Disconnected');
     }
-
-    connectWebSocket();
 
     joinBtn.onclick = () => {
       const group = groupSelect.value;
@@ -279,11 +244,16 @@
     };
 
     broadcastBtn.onclick = () => {
-      const username = usernameInput.value;
       const message = messageInput.value;
-      if (currentGroup && username && message) {
-        ws.send(JSON.stringify({ type: 'broadcast', group: currentGroup, username, message }));
-        appendMessage('user', message, username);
+      if (currentGroup && currentUser && message) {
+        ws.send(JSON.stringify({
+          type: 'broadcast',
+          group: currentGroup,
+          username: currentUser,
+          message,
+          role: currentRole
+        }));
+        appendMessage('user', message, currentUser, currentRole);
         messageInput.value = '';
       }
     };
@@ -294,11 +264,33 @@
       const usePinecone = usePineconeCheckbox.checked;
       if (currentGroup && topic && question) {
         typingIndicator.style.display = 'block';
-        ws.send(JSON.stringify({ type: 'question', group: currentGroup, topic, question, usePinecone }));
+        appendMessage('user', question, currentUser, currentRole);
+        ws.send(JSON.stringify({
+          type: 'question',
+          group: currentGroup,
+          topic,
+          question,
+          usePinecone,
+          role: currentRole
+        }));
         questionInput.value = '';
       }
     };
+
+    document.getElementById('chatTab').onclick = () => {
+      document.getElementById('chatTab').classList.add('active');
+      document.getElementById('questionTab').classList.remove('active');
+      document.getElementById('chatTabContent').style.display = 'block';
+      document.getElementById('questionTabContent').style.display = 'none';
+    };
+    document.getElementById('questionTab').onclick = () => {
+      document.getElementById('chatTab').classList.remove('active');
+      document.getElementById('questionTab').classList.add('active');
+      document.getElementById('chatTabContent').style.display = 'none';
+      document.getElementById('questionTabContent').style.display = 'block';
+    };
+
+    connectWebSocket();
   </script>
 </body>
 </html>
-

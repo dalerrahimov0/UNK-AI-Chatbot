@@ -1,5 +1,7 @@
-const express = require('express');
 const dotenv = require('dotenv');
+dotenv.config();
+
+const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const path = require('path');
@@ -13,15 +15,13 @@ if (!ENABLE_PINECONE) {
     console.log('********\n');
 }
 
-// Load environment variables from .env file
-dotenv.config();
-
 // Import bot functions after loading environment variables
 const { askQuestion, clearPineconeIndex } = require('./bot');
 const { fetchContentAndSaveToMarkdown } = require('./fetch_content');
 
 // Initialize Express app
 const app = express();
+app.use(express.static(__dirname));
 const port = process.env.PORT || 3000;
 const server = http.createServer(app);
 
@@ -44,6 +44,7 @@ wss.on('connection', (ws) => {
     ws.on('message', async (message) => {
         try {
             const data = JSON.parse(message);
+            console.log('[DEBUG] WebSocket received message:', data);
             
             // Handle joining a group
             if (data.type === 'join') {
@@ -75,7 +76,7 @@ wss.on('connection', (ws) => {
                     return;
                 }
                 
-                const { username, message: msg } = data;
+                const { username, message: msg, role } = data;
                 
                 if (!username || !msg) {
                     ws.send(JSON.stringify({
@@ -105,6 +106,7 @@ wss.on('connection', (ws) => {
 
             // Handle questions
             if (data.type === 'question') {
+                console.log('[DEBUG] Processing question:', data);
                 if (!userGroup) {
                     ws.send(JSON.stringify({
                         type: 'error',
@@ -113,7 +115,7 @@ wss.on('connection', (ws) => {
                     return;
                 }
                 
-                const { topic, question, usePinecone = false } = data;
+                const { topic, question, role, usePinecone = false } = data;
                 
                 if (!topic || !question) {
                     ws.send(JSON.stringify({
@@ -140,7 +142,8 @@ wss.on('connection', (ws) => {
                         topic,
                         question,
                         answer: result.answer,
-                        usage: result.usage
+                        usage: result.usage,
+                        role
                     });
                     
                     clients.forEach(client => {
@@ -311,3 +314,7 @@ app.get('/client.html', (req, res) => {
 app.get('/docs', (req, res) => {
     res.sendFile(path.join(__dirname, 'document-viewer.html'));
 });
+
+app.get('/unk-00001a.png', (req, res) => {
+    res.sendFile(path.join(__dirname, 'unk-00001a.png'));
+  });  

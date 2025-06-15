@@ -15,10 +15,12 @@
     header {
       background: #003366;
       color: white;
-      padding: 15px 30px;
+      padding: 10px 20px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      height: 60px; /* reduces header height */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     header img {
       height: 50px;
@@ -29,11 +31,14 @@
     }
     .container {
       max-width: 900px;
-      margin: 30px auto;
+      margin: 10px auto 0 auto;
       background: white;
       border-radius: 16px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
       padding: 30px;
+    }
+    .logo {
+      height: 40px;
     }
     .chat-window {
       height: 300px;
@@ -105,42 +110,52 @@
     }
     .message-wrapper { margin-bottom: 10px; }
     .message { padding: 10px; border-radius: 6px; background: #e8f5e9; }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 20px;
+      clear: both;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+
+    .user {
+      background-color: #cce5ff;
+      color: #000;
+      float: right;
+      text-align: right;
+    }
+
+    .ai {
+      background-color: #e0e0e0;
+      color: #000;
+      float: left;
+      text-align: left;
+    }
   </style>
 </head>
 <body>
-  <header style="background-color: #003366; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: space-between;">
-    <h1 style="color: white; font-size: 28px; margin: 0;">UNK AI ChatBot</h1>
-    <img src="unk-00001a.png" alt="UNK Logo" height="50" style="filter: drop-shadow(0 0 2px white); margin-right: 20px;" />
-  </header>  
-  <div class="container">
-    <div id="loginSection" style="max-width: 600px; margin: 60px auto; background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); text-align: center;">
-      <h2 style="font-weight: 600; margin-bottom: 30px;">Login</h2>
-      <input type="text" placeholder="Enter your name" id="usernameLogin" style="padding: 10px 15px; width: 50%; border: 1px solid #ccc; border-radius: 8px; margin-right: 10px;" />
-      <select id="roleSelect" style="padding: 10px 15px; border-radius: 8px; margin-right: 10px;">
-        <option value="student">Student</option>
-        <option value="staff">Staff</option>
-      </select>
-      <button id="loginBtn" style="padding: 10px 20px; background: #007bff; border: none; color: white; border-radius: 8px;">Enter</button>
-    </div>    
+  <header style="background-color: #003366; padding: 16px 0; height: 60px; display: flex; justify-content: center; align-items: center;">
+    <img src="logo.png" alt="UNK Logo" style="height: 50px;" />
+  </header>         
+  <div id="loginSection" style="max-width: 600px; margin: 60px auto; background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); text-align: center;">
+    <h2 style="font-weight: 600; margin-bottom: 30px;">Login</h2>
+    <input type="text" placeholder="Enter your name" id="usernameLogin" style="padding: 10px 15px; width: 50%; border-radius: 8px; margin-bottom: 15px;" />
+    <select id="roleSelect" style="padding: 10px 15px; border-radius: 8px; margin-right: 10px;">
+      <option value="student">Student</option>
+      <option value="staff">Staff</option>
+    </select>
+    <button id="loginBtn" style="padding: 10px 20px; background: #007bff; border: none; color: white; border-radius: 8px;">Enter</button>
+  </div>  
 
-    <div id="chatSection" style="display:none;">
+    <div class="container" style="margin-top: 20px; display: none;" id="chatSection">
       <div id="chatWindow" class="chat-window"></div>
       <div id="typingIndicator" style="display:none;">
         UNK AI is typing<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
       </div>
 
       <div class="controls">
-        <div class="row">
-          <select id="groupSelect">
-            <option value="">Select a group</option>
-            <option value="academic">Academic Advising</option>
-            <option value="career">Career Services</option>
-            <option value="tech">Tech Support</option>
-            <option value="general">General</option>
-          </select>
-          <button id="joinBtn">Join Group</button>
-        </div>
-
         <div class="tabs">
           <button id="chatTab" class="tab-btn active">Chat</button>
           <button id="questionTab" class="tab-btn">Ask Question</button>
@@ -173,7 +188,7 @@
 
   <script>
     let ws;
-    let currentGroup = null;
+    let currentGroup = "general";
     let currentUser = null;
     let currentRole = null;
 
@@ -189,8 +204,6 @@
     const questionInput = document.getElementById('questionInput');
     const usePineconeCheckbox = document.getElementById('usePineconeCheckbox');
     const sendBtn = document.getElementById('sendBtn');
-    const groupSelect = document.getElementById('groupSelect');
-    const joinBtn = document.getElementById('joinBtn');
     const typingIndicator = document.getElementById('typingIndicator');
 
     loginBtn.onclick = () => {
@@ -201,27 +214,39 @@
         currentRole = role;
         loginSection.style.display = 'none';
         chatSection.style.display = 'block';
+        document.getElementById("chatbotTitle").style.display = "none";
       }
     };
 
     function appendMessage(type, text, sender = '', role = '') {
       const wrapper = document.createElement('div');
       wrapper.className = 'message-wrapper';
+
       const msg = document.createElement('div');
-      msg.className = `message ${type}`;
+      msg.className = `message ${type}`; // 'user' or 'ai'
+
       const timestamp = new Date().toLocaleTimeString();
       const roleTag = role ? ` (${role})` : '';
+
+      const cleanText = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
+        .replace(/##+/g, '')                               // Remove ## or ### headers
+        .replace(/\n/g, '<br>');                           // Line breaks
+
       msg.innerHTML = sender
-        ? `<strong>${sender}${roleTag}</strong>: ${text}<br><small>${timestamp}</small>`
-        : `${text}<br><small>${timestamp}</small>`;
+        ? `<strong>${sender}${roleTag}</strong>:<br>${cleanText}<br><small>${timestamp}</small>`
+        : `${cleanText}<br><small>${timestamp}</small>`;
+
       wrapper.appendChild(msg);
       chatWindow.appendChild(wrapper);
       chatWindow.scrollTo({ top: chatWindow.scrollHeight });
     }
-
     function connectWebSocket() {
       ws = new WebSocket(`ws://${window.location.hostname}:3000`);
-      ws.onopen = () => appendMessage('system', 'Connected to server');
+      ws.onopen = () => {
+        appendMessage('system', 'Connected to server');
+        ws.send(JSON.stringify({ type: 'join', group: currentGroup }));
+      };
       ws.onmessage = (event) => {
         typingIndicator.style.display = 'none';
         const data = JSON.parse(event.data);
@@ -233,15 +258,6 @@
       ws.onerror = () => appendMessage('error', 'Connection error');
       ws.onclose = () => appendMessage('system', 'Disconnected');
     }
-
-    joinBtn.onclick = () => {
-      const group = groupSelect.value;
-      if (group && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'join', group }));
-        currentGroup = group;
-        appendMessage('status', `Joined group: ${group}`);
-      }
-    };
 
     broadcastBtn.onclick = () => {
       const message = messageInput.value;

@@ -1,115 +1,45 @@
-# Chatbot Application
+# UNK AI Chatbot 🤖
 
-A Node.js chatbot application with both REST API and WebSocket support.
+A full-stack AI-powered chatbot built for the University of Nebraska at Kearney (UNK) website. This project delivers real-time, accurate answers by crawling official UNK webpages and leveraging natural language understanding.
 
-## Features
+## 🚀 Features
 
-- REST API for question answering
-- WebSocket support for real-time group chat
-- Context-aware responses based on markdown documents
-- Academic advising support with example knowledge base
-- Vector database storage with Pinecone Local for semantic search
-- Docker support for running Pinecone Local vector database
+- **AI-Powered Responses** – Uses OpenAI GPT for context-aware answers
+- **Document Ingestion** – Parses and indexes content from the UNK site
+- **Vector Search** – Powered by Pinecone for fast semantic search
+- **Real-Time Chat** – WebSocket-based messaging with live typing
+- **Role-Based Access** – Separate experiences for staff and students
+- **Modern UI** – Responsive frontend with markdown rendering
+- **Fully Local Environment** – Docker-compatible with no external dependencies
 
-## Setup
+## 🧠 Tech Stack
 
-1. Clone the repository
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Create a `.env` file with your OpenAI API key:
-   ```
-   OPENAI_API_KEY=your_key_here
-   PORT=3000
-   PINECONE_API_KEY=pclocal
-   ```
-4. Start the Pinecone database with Docker:
-   ```
-   npm run docker:start
-   ```
-5. Start the server:
-   ```
-   npm start
-   ```
+- **Frontend:** HTML, Tailwind CSS, JavaScript
+- **Backend:** Node.js, Express, WebSockets
+- **AI Layer:** OpenAI GPT
+- **Search Engine:** Pinecone Vector Database
+- **Dev Tools:** Docker, Postman
 
-To stop the Pinecone database:
-```
-npm run docker:stop
-```
 
-## REST API Usage
+## 🛠️ How to Run
 
-### Health Check
-```
-GET /health
-```
+1. Clone the repo  
+   `git clone https://github.com/dalerrahimov0/UNK-AI-Chatbot.git`
 
-### Ask a Question
-```
-POST /api/ask
-Content-Type: application/json
+2. Install dependencies  
+   `npm install`
 
-{
-    "topic": "Academic Advising",
-    "question": "How do I change my major?"
-}
-```
+3. Add your `.env` file (based on `.env.example`)
 
-## WebSocket Usage
+4. Start the server  
+   `node index.js`
 
-Connect to `ws://localhost:3000`
+5. Open the client  
+   Navigate to `http://localhost:3000/client.html`
 
-### Join a Group
-```json
-{
-    "type": "join",
-    "group": "academic"
-}
-```
+---
 
-### Send a Question
-```json
-{
-    "type": "question",
-    "topic": "Academic Advising",
-    "question": "How do I change my major?"
-}
-```
+## 🙋‍♂️ Author
 
-### Send a Broadcast Message
-```json
-{
-    "type": "broadcast",
-    "username": "JohnDoe",
-    "message": "Hello everyone in the group!"
-}
-```
+[Daler Rahimov](https://www.linkedin.com/in/daler-rahimov-002970264/)
 
-### Response Types
-- `system`: System messages
-- `status`: Processing status updates
-- `answer`: Question/answer responses (AI-generated)
-- `broadcast`: Direct user messages
-- `error`: Error messages
-
-## Test Client
-
-A test client is available at:
-```
-http://localhost:3000/client.html
-```
-
-## Postman Collection
-
-A Postman collection is included for testing both the REST API and WebSocket functionality:
-- Import `postman_collection.json` into Postman
-- Use the "Run in Postman" button for WebSocket testing
-
-## Project Structure
-
-- `index.js`: Express server and WebSocket handling
-- `bot.js`: OpenAI integration and chatbot logic with Pinecone Local vector database
-- `docs/`: Markdown knowledge base
-- `websocket-client.html`: Test client for WebSocket
-- `docker-compose.yml`: Docker configuration for Pinecone Local database

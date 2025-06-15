@@ -39,6 +39,8 @@ A full-stack AI-powered chatbot built for the University of Nebraska at Kearney 
 
 ---
 
+📄 **License:** This project is view-only. Usage, distribution, or modification without permission is prohibited. See [LICENSE](./LICENSE) for details.
+
 ## 🙋‍♂️ Author
 
 [Daler Rahimov](https://www.linkedin.com/in/daler-rahimov-002970264/)
